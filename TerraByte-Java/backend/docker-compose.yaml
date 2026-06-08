@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: rm564555_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@oracle-db:1521/FREEPDB1
+      - SPRING_DATASOURCE_USERNAME=blog_user
+      - SPRING_DATASOURCE_PASSWORD=OracleBlog2026!
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=oracle.jdbc.OracleDriver
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+      - SPRING_SQL_INIT_MODE=never
+
+  oracle-db:
+    image: gvenzl/oracle-free:latest
+    container_name: rm564555_db
+    shm_size: 1g
+    ports:
+      - "1521:1521"
+    environment:
+      - ORACLE_PASSWORD=OracleAdmin2026!
+      - APP_USER=blog_user
+      - APP_USER_PASSWORD=OracleBlog2026!
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  oracle-data:
